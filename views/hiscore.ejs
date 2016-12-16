@@ -1,0 +1,17 @@
+<head>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+</head>
+<h2>Congratulations!</h2>
+<h3 id="statusbar">You're one of the highest scores!</h3>
+<div id="scoreboard"></div>
+<input type="submit" value="Try again!" onclick="window.location.assign('/'); return false;"><br>
+<script>
+    $.get( "/scores", function( data ) {
+            var scoreboardhtml = "";
+            for (i = 0; i < 5; i++) {
+                scoreboardhtml += "#" + (i+1) + " " + data.data[i].name + ": " + data.data[i].score + "<br>";
+            }
+            $('#scoreboard').html(scoreboardhtml);
+    });
+</script>

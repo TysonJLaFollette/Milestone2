@@ -1,0 +1,84 @@
+<head>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+</head>
+
+<h2>Basic Math Quiz!</h2>
+<h3 id="statusbar"></h3>
+
+<form>
+    What is your name?<br>
+    <input type="text" id="name"><br>
+    0+0 = ?<br>
+    <input type="text" id="answer1"><br>
+    1+1 = ?<br>
+    <input type="text" id="answer2"><br>
+    2+2 = ?<br>
+    <input type="text" id="answer3"><br>
+    3+3 = ?<br>
+    <input type="text" id="answer4"><br>
+    4+4 = ?<br>
+    <input type="text" id="answer5"><br>
+    <input type="submit" value="Submit Answers" onclick="checkScore(); return false;"><br>
+</form>
+<script>
+   function checkScore(){
+       var score = 0;
+       var place = 5; //Zero indexed places. 0 = 1st place. 5 is out of range.
+       if ($("#answer1").val() == "0") {//must treat 0 as a string, because javascripte treats a blank input as equal to 0.
+            score++
+        };
+        if ($("#answer2").val() == 2) {
+            score++
+        };
+        if ($("#answer3").val() == 4) {
+            score++
+        };
+        if ($("#answer4").val() == 6) {
+            score++
+        };
+        if ($("#answer5").val() == 8) {
+            score++
+        };
+        console.log("Score: " + score);
+        
+        $.get( "/scores", function( data ) {
+            //loop through all scores, checking if new score is higher than some old score.
+            for (i = 0; i < 5; i++) {
+                console.log(i +" : " + data.data[i].score);
+               if (score >= data.data[i].score){//ironically, data object has property named data which is an array of name/score pairs.
+                   console.log("Score >= #" + i);
+                   place = i;
+                   break;
+               } 
+            }
+            console.log("Place: " + place);
+            //if new score is a hi score, drop lowest hiscore and shift all lower scores down.
+            /*This section works, but is JSON
+            if (place < 5) {
+                for (i = 4; i > place; i--) {
+                    data.data[i] = data.data[i-1];
+                }
+                var newScore = {name:$("#name").val(), score:score};
+                //add new score to array.
+                data.data[place] = newScore;
+            }
+            */
+            if (place < 5) {
+                //if they placed 1st - 4th, do loop, otherwise skip.
+                for (i = 4; i > place; i--) {
+                    $.post( "/scores/" + (i+1), {name:data.data[i-1].name, score:data.data[i-1].score}, function( data ) {
+                        console.log("Moved #" + (i+1) + " down.");
+                    });
+                }
+                $.post("/scores/" + (place+1), {name:$("#name").val(), score:score}, function(data){
+                   console.log("Inserted new score into position " + place); 
+                });
+                window.location.assign("/hiscoreboard");
+            }
+           if (place >=5) {
+               window.location.assign("/lowscoreboard");
+           }
+        });
+   }
+</script>
